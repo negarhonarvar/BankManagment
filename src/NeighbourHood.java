@@ -33,6 +33,9 @@ public class NeighbourHood
     {
         return Left_down_y;
     }
+
+    public String getName(){return name;}
+
     public boolean IsInside(Point point)
     {
         if(point.getX()<=getRight_up_x() && point.getX()>=getLeft_down_x() && point.getY()>=getLeft_down_y()
