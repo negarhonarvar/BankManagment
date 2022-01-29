@@ -3,6 +3,8 @@ import java.util.Scanner;
 
 public class MainClass
 {
+    int bankCtr=0;
+    int branchCtr=0;
     Node root=null;
     int depth=0;
     KD_Tree Branches=new KD_Tree();
@@ -10,7 +12,6 @@ public class MainClass
     int b_depth=0;
     KD_Tree Banks=new KD_Tree();
     private static HashMap<String, NeighbourHood> neighbourHoodHashMap = new HashMap<String,NeighbourHood>(); // neighbourhood name -> NeighbourHood
-    private static HashMap<String, Branch> ListOfMainBankBranchs = new HashMap<String,Branch>();
     private static HashMap<String,MainBank> ListOfMainBanks= new HashMap<String, MainBank>();
 
     Scanner in = new Scanner(System.in);
@@ -99,6 +100,7 @@ public class MainClass
     }
     public void addB()
     {
+        bankCtr++;
         System.out.println("Please enter Bank's name:");
         String name=in.nextLine();
         System.out.println("Now,Please enter the coordinates :");
@@ -112,34 +114,18 @@ public class MainClass
         MainBank b=new MainBank(name,p);
         for (int i = 0; i < flag ; i++)
         {
-            System.out.print("please enter branch's name:");
-            String branchName=in.nextLine();
-            System.out.println();
-            System.out.println("please enter branch's coordinates:");
-            System.out.print("x:");
-            double x1=in.nextDouble();
-            System.out.print("y:");
-            double y1=in.nextDouble();
-            System.out.println();
-            Point p1=new Point(x1,y1);
-            Branch branch=new Branch(branchName,name,p1);
-            ListOfMainBankBranchs.put(branch.getName(),branch);
-            Node node= new Node(x1,y1,branchName);
-            Branches.Insertion(root,node,depth);
-            root=node;
-            depth=depth+1;
-            b.Branches.Insertion(b.root,node,b.depth);
-            b.depth++;
+            addBr();
         }
-        b.setBranches(ListOfMainBankBranchs);
         ListOfMainBanks.put(b.getName(),b);
         Node node=new Node(x,y,b.getName());
         Banks.Insertion(b_root,node,b_depth);
-        b_root=node;
+        if(bankCtr==1)
+           b_root=node;
         b_depth++;
     }
     public void addBr()
     {
+        branchCtr++;
         System.out.print("please enter the main bank's name:");
         String mainBankName=in.nextLine();
         System.out.println();
@@ -154,6 +140,7 @@ public class MainClass
         double y=in.nextDouble();
         System.out.println();
         Node node=new Node(x,y,branchName);
+        node.setMainBankName(mainBankName);
         while(Branches.Search(root,node,0))
         {
             System.out.println("a branch with the same coordinates exist,please enter coordinates again");
@@ -166,39 +153,124 @@ public class MainClass
             System.out.println();
             node=new Node(x,y,branchName);
         }
-        Point p=new Point(x,y);
+        //Point p=new Point(x,y);
         Branches.Insertion(root,node,depth);
         ListOfMainBanks.get(mainBankName).Branches.Insertion(ListOfMainBanks.get(mainBankName).root,node,ListOfMainBanks.get(mainBankName).depth);
-        ListOfMainBanks.get(mainBankName).root=node;
+        if(ListOfMainBanks.get(mainBankName).depth==0)
+            ListOfMainBanks.get(mainBankName).root=node;
         ListOfMainBanks.get(mainBankName).depth++;
         depth++;
-        root=node;
-        Branch branch=new Branch(branchName,mainBankName,p);
-        ListOfMainBanks.get(mainBankName).branches.put(branchName,branch);
+        if(branchCtr==1)
+           root=node;
+        //Branch branch=new Branch(branchName,mainBankName,p);
     }
 
     public void delBr()
     {
-
+        System.out.println("please enter the coordinates of the branch you want to delete:");
+        System.out.print("x:");
+        double x=in.nextDouble();
+        System.out.println();
+        System.out.print("y:");
+        double y=in.nextDouble();
+        System.out.println();
+        Node node=new Node(x,y,null);
+        while(Banks.Search(b_root,node,0) || Branches.Search(root,node,0))
+        {
+            System.out.println("the coordinates either belong to a main bank or those not exist;please re-enter the coordinates:");
+            System.out.print("x:");
+            x=in.nextDouble();
+            System.out.println();
+            System.out.print("y:");
+            y=in.nextDouble();
+            System.out.println();
+        }
+        root=Branches.Deletation(root,x,y,0);
+        b_root=Banks.Deletation(b_root,x,y,0);
+        b_depth--;
+        depth--;
     }
     public void listB()
     {
-
+        System.out.print("please enter the neighbourhood's name:");
+        String neighbourhoodName=in.nextLine();
+        System.out.println();
+        NeighbourHood n= neighbourHoodHashMap.get(neighbourhoodName);
+        double x_max=n.getRight_up_x();
+        double x_min=n.getLeft_down_x();
+        double y_max=n.getRight_up_y();
+        double y_min=n.getLeft_down_y();
+        Banks.InNeighbourHood(x_max,x_min,y_max,y_min,b_root,b_depth);
+        Branches.InNeighbourHood(x_max,x_min,y_max,y_min,root,depth);
     }
     public void listBrs()
     {
+        System.out.print("please enter the main bank's name:");
+        String name=in.nextLine();
+        System.out.println();
+        MainBank bank=ListOfMainBanks.get(name);
+        bank.root=ListOfMainBanks.get(name).root;
+        bank.Branches=ListOfMainBanks.get(name).Branches;
+        bank.Branches.Iteration(bank.root);
 
     }
     public void nearB()
     {
-
+        System.out.println("please enter your coordinates:");
+        System.out.print("x:");
+        double x=in.nextDouble();
+        System.out.println();
+        System.out.print("y:");
+        double y=in.nextDouble();
+        System.out.println();
+        double distance=Math.sqrt((b_root.x-x)*(b_root.x-x)+(b_root.y-y)*(b_root.y-y));
+        Node n1= Banks.findNearest(b_root.left,x,y,distance);
+        Node n2= Banks.findNearest(b_root.right,x,y,distance);
+        double distance1=Math.sqrt((n1.x-x)*(n1.x-x)+(n1.y-y)*(n1.y-y));
+        double distance2=Math.sqrt((n2.x-x)*(n2.x-x)+(n2.y-y)*(n2.y-y));
+        if(distance1>=distance2)
+            Banks.MainBankPrint(n2);
+        else
+            Banks.MainBankPrint(n1);
     }
     public void nearBr()
     {
-
+        System.out.println("please enter your coordinates:");
+        System.out.print("x:");
+        double x=in.nextDouble();
+        System.out.println();
+        System.out.print("y:");
+        double y=in.nextDouble();
+        System.out.println();
+        System.out.print("please enter the main banks name:");
+        String name=in.nextLine();
+        System.out.println();
+        MainBank bank=ListOfMainBanks.get(name);
+        bank.root=ListOfMainBanks.get(name).root;
+        double distance=Math.sqrt((bank.root.x-x)*(bank.root.x-x)+(bank.root.y-y)*(bank.root.y-y));
+        Node n1= Banks.findNearest(bank.root.left,x,y,distance);
+        Node n2= Banks.findNearest(bank.root.right,x,y,distance);
+        double distance1=Math.sqrt((n1.x-x)*(n1.x-x)+(n1.y-y)*(n1.y-y));
+        double distance2=Math.sqrt((n2.x-x)*(n2.x-x)+(n2.y-y)*(n2.y-y));
+        if(distance1>=distance2)
+            Branches.BranchPrint(n2);
+        else
+            Branches.BranchPrint(n1);
     }
     public void availB()
     {
+        System.out.println("please enter your coordinates:");
+        System.out.print("x:");
+        double x=in.nextDouble();
+        System.out.println();
+        System.out.print("y:");
+        double y=in.nextDouble();
+        System.out.println();
+        System.out.print("please enter the radius:");
+        double radius=in.nextDouble();
+        System.out.println();
+        Banks.findAround(b_root,x,y,radius,0);
+        Branches.findAround(root,x,y,radius,0);
 
     }
 }
