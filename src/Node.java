@@ -4,10 +4,12 @@ public class Node
     double y;
     Node left;
     Node right;
-      Node(double x, double y)
+    String name;
+      Node(double x, double y,String name)
       {
           this.x=x;
           this.y=y;
           this.left=this.right=null;
+          this.name=name;
       }
 }

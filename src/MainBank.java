@@ -1,28 +1,27 @@
 import HashMap.HashMap;
 
-public class MainBank
-{
+public class MainBank {
   private String name;
   private Point coordinate;
-  HashMap<String,Branch> branches;
-  MainBank(String name,Point point,HashMap<String,Branch> branches)
+  HashMap<String, Branch> branches;
+  int depth=0;
+  Node root=null;
+  KD_Tree Branches = new KD_Tree();
+
+  MainBank(String name, Point point) {
+    this.name = name;
+    this.coordinate = point;
+  }
+  public void setBranches(HashMap<String, Branch> branches)
   {
-    this.name=name;
-    this.coordinate=point;
     this.branches=branches;
   }
-  public String getName()
-  {
+
+  public String getName() {
     return name;
   }
 
-  public Point getCoordinate()
-  {
+  public Point getCoordinate() {
     return coordinate;
-  }
-
-  public void setBranches(String name,Branch branch)
-  {
-    this.branches.put(name,branch);
   }
 }
